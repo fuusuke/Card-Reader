@@ -1,0 +1,41 @@
+<loader version="1.0">
+	<application id="HTTPRequest">
+		<name >
+			HTTP Request
+		</name>
+		<description >
+			
+		</description>
+		<version >
+			1.0
+		</version>
+		<vendor >
+			Research In Motion Ltd.
+		</vendor>
+		<copyright >
+			Copyright (c) 2013 Research In Motion Ltd.
+		</copyright>
+		<fileset Java="1.55" _blackberryVersion="[6.0.0,6.0.1)">
+			<directory >
+				6.0.0
+			</directory>
+			<files >
+				HTTPRequest.cod
+
+			</files>
+
+		</fileset>
+		<fileset Java="1.55" _blackberryVersion="[7.1.0)">
+			<directory >
+				7.1.0
+			</directory>
+			<files >
+				HTTPRequest.cod
+
+			</files>
+
+		</fileset>
+
+	</application>
+
+</loader>
