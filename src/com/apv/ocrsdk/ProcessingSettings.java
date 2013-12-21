@@ -7,5 +7,5 @@ public class ProcessingSettings {
 	}
 
 	private String language = "English";
-	private String outputFormat = "xml";
+	private String outputFormat = "txt";
 }

@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 RIM-COD-Module-Name: HTTPRequest
 RIM-COD-Module-Dependencies: net_rim_cldc,net_rim_amms,net_rim_networkapi,net_rim_ui_extension,net_rim_xml_org,net_rim_xml
-MIDlet-Jar-Size: 54080
+MIDlet-Jar-Size: 53857
 MIDlet-1: HTTP Request,img/httpdemo_jde.png,
-RIM-COD-Creation-Time: 1387578399
+RIM-COD-Creation-Time: 1387583615
 MIDlet-Jar-URL: HTTPRequest.jar
 RIM-COD-URL: HTTPRequest.cod
-RIM-COD-SHA1: a6 07 5b 1b b7 a0 ea ee 3e 51 39 7a 02 fd 47 65 c2 37 92 73
-RIM-COD-Size: 23080
+RIM-COD-SHA1: b3 e1 91 0b 47 4a 51 34 14 9f f1 63 3b e1 33 9e 5f 21 8b 5c
+RIM-COD-Size: 22856
 MicroEdition-Configuration: CLDC-1.1
 MIDlet-Version: 1.0
 MIDlet-Name: HTTPRequest

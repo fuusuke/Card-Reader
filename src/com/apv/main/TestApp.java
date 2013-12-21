@@ -37,12 +37,12 @@ public class TestApp {
 		System.out.println("Uploading file..");
 		ProcessingSettings settings = new ProcessingSettings();
 		task = restClient.processImage(raw, settings);
-		System.out.println("File Uploaded.. Task ID: " + task != null ? task.Id
-				: "Task is NULL");
-		task = restClient.processDocument(task.Id, settings);
-		System.out.println("Document Processed..");
-		System.out.println("Going into waitAndDownloadResult");
-		waitAndDownloadResult(task);
+		System.out.println("File Uploaded.. Task ID: "
+				+ (task != null ? ("Task ID" + task.Id) : "Task is NULL"));
+		if (task != null) {
+			System.out.println("Going into waitAndDownloadResult");
+			waitAndDownloadResult(task);
+		}
 	}
 
 	private static Task waitForCompletion(Task task) {

@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
@@ -11,8 +12,10 @@ import javax.microedition.io.HttpConnection;
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.ui.component.Dialog;
 
 import com.apv.http.HTTPRequest;
+import com.apv.main.ClientSettings;
 
 public class Client {
 	public String applicationId;
@@ -36,6 +39,8 @@ public class Client {
 			try {
 				System.out.println("AuthString: " + authString);
 				httpConn.setRequestProperty("Authorization", authString);
+				httpConn.setRequestProperty("Connection", "Keep-Alive");
+				httpConn.setRequestProperty("ENCTYPE", "multipart/form-data");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -57,53 +62,19 @@ public class Client {
 					.getBytes());
 
 			os.write(bos.toByteArray());
-			os.close();
+			// os.close();
 		} catch (Exception e) {
 			System.out.println(e);
 			e.printStackTrace();
 		}
-		if (responseCode == 200) {
-			InputStream inputStream = null;
-			try {
-				responseCode = httpConn.getResponseCode();
-				inputStream = httpConn.openInputStream();
-			} catch (IOException e) {
-				System.out.println("Exception: " + e.getMessage());
-			}
-			try {
-				Task task = new Task(inputStream);
-				inputStream.close();
-				httpConn.close();
-				return task;
-			} catch (Exception e) {
-				System.out.println("Exception: " + e.getMessage());
-			}
-		} else if (responseCode == 401) {
-			System.out
-					.println("HTTP 401 Unauthorized. Please check your application id and password");
-		} else if (responseCode == 407) {
-			System.out.println("HTTP 407. Proxy authentication error");
-		} else {
-			System.out.println("Exiting from getResponse");
-		}
-		return null;
-	}
-
-	public Task processDocument(String taskId, ProcessingSettings settings) {
-		String url = new String(serverUrl + "/processDocument?taskId=" + taskId
-				+ "&" + settings.asUrlParams());
-		System.out.println("URL: " + url);
-		HttpConnection httpConn = null;
 		try {
-			httpConn = (HttpConnection) Connector.open(url);
-		} catch (IOException e) {
-			System.out.println("Exception: " + e.getMessage());
+			responseCode = httpConn.getResponseCode();
+		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
-		int responseCode = 0;
 		if (responseCode == 200) {
 			InputStream inputStream = null;
 			try {
-				responseCode = httpConn.getResponseCode();
 				inputStream = httpConn.openInputStream();
 			} catch (IOException e) {
 				System.out.println("Exception: " + e.getMessage());
@@ -117,125 +88,16 @@ public class Client {
 				System.out.println("Exception: " + e.getMessage());
 			}
 		} else if (responseCode == 401) {
-			System.out
-					.println("HTTP 401 Unauthorized. Please check your application id and password");
+			HTTPRequest
+					.errorDialog("HTTP 401 Unauthorized. Please check your application id and password");
 		} else if (responseCode == 407) {
-			System.out.println("HTTP 407. Proxy authentication error");
+			HTTPRequest.errorDialog("HTTP 407. Proxy authentication error");
 		} else {
-			System.out.println("Exiting from getResponse");
+			HTTPRequest.errorDialog("Exiting from getResponse");
 		}
 		return null;
 	}
 
-	// -----------NOT REQUIRED
-	/*
-	 * public Task processRemoteImage(String fileUrl, ProcessingSettings
-	 * settings) throws Exception { URL url = new
-	 * URL(String.format("%s/processRemoteImage?source=%s&%s", serverUrl,
-	 * URLEncoder.encode(fileUrl, "UTF-8"), settings.asUrlParams()));
-	 * 
-	 * HttpURLConnection connection = openGetConnection(url); return
-	 * getResponse(connection); }
-	 * 
-	 * public Task processBusinessCard(String filePath, BusCardSettings
-	 * settings) throws Exception { URL url = new URL(serverUrl +
-	 * "/processBusinessCard?" + settings.asUrlParams()); byte[] fileContents =
-	 * readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task processTextField(String filePath, TextFieldSettings settings)
-	 * throws Exception { URL url = new URL(serverUrl + "/processTextField?" +
-	 * settings.asUrlParams()); byte[] fileContents =
-	 * readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task processBarcodeField(String filePath, BarcodeSettings
-	 * settings) throws Exception { URL url = new URL(serverUrl +
-	 * "/processBarcodeField?" + settings.asUrlParams()); byte[] fileContents =
-	 * readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task processCheckmarkField(String filePath) throws Exception { URL
-	 * url = new URL(serverUrl + "/processCheckmarkField"); byte[] fileContents
-	 * = readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task processFields(String taskId, String settingsPath) throws
-	 * Exception { URL url = new URL(serverUrl + "/processFields?taskId=" +
-	 * taskId); byte[] fileContents = readDataFromFile(settingsPath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task processMrz(String filePath) throws Exception { URL url = new
-	 * URL(serverUrl + "/processMrz"); byte[] fileContents =
-	 * readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); } public Task captureData(String
-	 * filePath, String templateName) throws Exception { URL url = new
-	 * URL(serverUrl + "/captureData?template=" + templateName); byte[]
-	 * fileContents = readDataFromFile(filePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 * 
-	 * public Task createTemplate(String taskId, String templateName, String
-	 * settingsFilePath) throws Exception { URL url = new URL(serverUrl +
-	 * "/createTemplate?taskId=" + taskId + "&template=" + templateName); byte[]
-	 * fileContents = readDataFromFile(settingsFilePath);
-	 * 
-	 * HttpURLConnection connection = openPostConnection(url);
-	 * 
-	 * connection.setRequestProperty("Content-Length",
-	 * Integer.toString(fileContents.length));
-	 * connection.getOutputStream().write(fileContents);
-	 * 
-	 * return getResponse(connection); }
-	 */
 	public Task getTaskStatus(String taskId) {
 		String url = new String(serverUrl + "/getTaskStatus?taskId=" + taskId);
 
@@ -247,10 +109,14 @@ public class Client {
 		}
 
 		int responseCode = 0;
+		try {
+			responseCode = httpConn.getResponseCode();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		if (responseCode == 200) {
 			InputStream inputStream = null;
 			try {
-				responseCode = httpConn.getResponseCode();
 				inputStream = httpConn.openInputStream();
 			} catch (IOException e) {
 				System.out.println("Exception: " + e.getMessage());
@@ -328,11 +194,19 @@ public class Client {
 			System.out.println("Exception: " + e.getMessage());
 		}
 		if (data != null)
-			HTTPRequest.errorDialog(String.valueOf(data));
+			try {
+				Dialog.inform(new String(data, "UTF-8"));
+			} catch (UnsupportedEncodingException e) {
+				HTTPRequest
+						.errorDialog("Data received but was not encoded properly.");
+				e.printStackTrace();
+			}
 	}
 
 	private String encodeUserPassword() {
-		String toEncode = applicationId + ":" + password;
+		String toEncode = ClientSettings.APPLICATION_ID + ":"
+				+ ClientSettings.PASSWORD;
+		System.out.println("To Encode: " + toEncode);
 		return Base64.encode(toEncode);
 	}
 

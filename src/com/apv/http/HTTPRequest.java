@@ -19,17 +19,17 @@ public class HTTPRequest {
 	 * @param imageBytes
 	 */
 	public HTTPRequest(byte[] imageBytes) {
-		// _connectionThread = new ConnectionThread(imageBytes);
-		// _connectionThread.start();
-		if (imageBytes != null) {
-			try {
-				TestApp.performRecognition(imageBytes);
-			} catch (Exception e) {
-				System.out.println("Exception: " + e.getMessage());
-			}
-		} else {
-			System.err.println("Image is NULL");
-		}
+		_connectionThread = new ConnectionThread(imageBytes);
+		_connectionThread.start();
+		// if (imageBytes != null) {
+		// try {
+		// TestApp.performRecognition(imageBytes);
+		// } catch (Exception e) {
+		// System.out.println("Exception: " + e.getMessage());
+		// }
+		// } else {
+		// System.err.println("Image is NULL");
+		// }
 
 	}
 
