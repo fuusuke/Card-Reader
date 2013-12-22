@@ -64,20 +64,19 @@ public class Client {
 			os.write(bos.toByteArray());
 			// os.close();
 		} catch (Exception e) {
-			System.out.println(e);
-			e.printStackTrace();
+			System.out.println("Exception 1: " + e.getMessage());
 		}
 		try {
 			responseCode = httpConn.getResponseCode();
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			System.out.println("Exception 2: " + e1.getMessage());
 		}
 		if (responseCode == 200) {
 			InputStream inputStream = null;
 			try {
 				inputStream = httpConn.openInputStream();
 			} catch (IOException e) {
-				System.out.println("Exception: " + e.getMessage());
+				System.out.println("Exception 3: " + e.getMessage());
 			}
 			try {
 				Task task = new Task(inputStream);

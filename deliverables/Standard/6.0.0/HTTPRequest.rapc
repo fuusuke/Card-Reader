@@ -1,10 +1,10 @@
-MIDlet-Name: HTTPRequest
+MIDlet-Name: BBOCR
 MIDlet-Version: 1.0
 MIDlet-Vendor: Research In Motion Ltd.
-MIDlet-Jar-URL: HTTPRequest.jar
+MIDlet-Jar-URL: BBOCR.jar
 MIDlet-Jar-Size: 0
 MicroEdition-Profile: MIDP-2.0
 MicroEdition-Configuration: CLDC-1.1
-MIDlet-1: HTTP Request,img/httpdemo_jde.png,
+MIDlet-1: BB OCR,img/httpdemo_jde.png,
 RIM-MIDlet-Flags-1: 0
 

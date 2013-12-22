@@ -4,10 +4,10 @@ import com.apv.ocrsdk.Client;
 import com.apv.ocrsdk.ProcessingSettings;
 import com.apv.ocrsdk.Task;
 
-public class TestApp {
+public class BBOCR {
 	private static Client restClient = new Client();
 
-	public TestApp() {
+	public BBOCR() {
 		if (!checkAppId()) {
 			return;
 		}
@@ -48,7 +48,7 @@ public class TestApp {
 	private static Task waitForCompletion(Task task) {
 		while (task.isTaskActive()) {
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(500);
 			} catch (InterruptedException e) {
 				System.out.println("Exception: " + e.getMessage());
 			}
@@ -56,22 +56,6 @@ public class TestApp {
 			task = restClient.getTaskStatus(task.Id);
 		}
 		return task;
-	}
-
-	public static void waitAndDownloadResult(Task task, String outputPath) {
-		task = waitForCompletion(task);
-
-		if (task.Status == Task.TaskStatus[4]) {
-			System.out.println("Downloading..");
-			restClient.downloadResult(task, outputPath);
-			System.out.println("Ready");
-		} else if (task.Status == Task.TaskStatus[7]) {
-			System.out.println("Not enough credits to process document. "
-					+ "Please add more pages to your application's account.");
-		} else {
-			System.out.println("Task failed");
-		}
-
 	}
 
 	private static void waitAndDownloadResult(Task task) {
