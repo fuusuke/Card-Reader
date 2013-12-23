@@ -17,6 +17,7 @@ import net.rim.device.api.io.transport.ConnectionFactory;
 import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
 
+import com.apv.camera.CameraScreen;
 import com.apv.http.OCR;
 import com.apv.main.ClientSettings;
 
@@ -233,9 +234,14 @@ public class Client {
 			if (data != null) {
 
 				UiApplication.getUiApplication().invokeAndWait(new Runnable() {
+
 					public void run() {
 						try {
-							Dialog.inform((new String(data, "UTF-8")));
+							String dataString = new String(data, "UTF-8");
+							Dialog.inform(dataString);
+							saveFile(
+									FOLDER + CameraScreen.fileName + EXTENTION,
+									dataString);
 						} catch (UnsupportedEncodingException e) {
 							Dialog.inform("Data received but was not encoded properly.");
 							System.out.println("Exception: " + e.getMessage());
@@ -269,17 +275,15 @@ public class Client {
 			os.close();
 			fconn.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Dialog.alert(e.toString());
+			System.out.println("Exception at save output file: "
+					+ e.getMessage());
 			return false;
 		}
 		return true;
 	}
 
-	private String getFileName() {
+	private static final String EXTENTION = ".txt";
 
-		return "file:///SDCard/BlackBerry/documents/text.dat";
-
-	}
+	private static final String FOLDER = "file:///SDCard/BlackBerry/documents/";
 
 }
