@@ -48,11 +48,12 @@ public class BBOCR {
 	private static Task waitForCompletion(Task task) {
 		while (task.isTaskActive()) {
 			try {
-				Thread.sleep(500);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
-				System.out.println("Exception: " + e.getMessage());
+				System.out.println("Exception in thread.sleep: "
+						+ e.getMessage());
 			}
-			System.out.println("Waiting..");
+			System.out.println("Waiting.. for task id: " + task.Id);
 			task = restClient.getTaskStatus(task.Id);
 		}
 		return task;

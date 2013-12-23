@@ -1,6 +1,7 @@
 package com.apv.ocrsdk;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -8,20 +9,22 @@ import java.io.UnsupportedEncodingException;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
+import javax.microedition.io.file.FileConnection;
 
 import net.rim.device.api.io.IOUtilities;
 import net.rim.device.api.io.transport.ConnectionDescriptor;
 import net.rim.device.api.io.transport.ConnectionFactory;
+import net.rim.device.api.ui.UiApplication;
 import net.rim.device.api.ui.component.Dialog;
 
-import com.apv.http.HTTPRequest;
+import com.apv.http.OCR;
 import com.apv.main.ClientSettings;
 
 public class Client {
 	public String applicationId;
 	public String password;
 
-	public String serverUrl = "http://cloud.ocrsdk.com";
+	public String serverUrl = "https://cloud.ocrsdk.com";
 
 	public Task processImage(byte[] raw, ProcessingSettings settings) {
 		String url = new String(serverUrl + "/processImage?"
@@ -34,7 +37,7 @@ public class Client {
 					.getConnection(url);
 			httpConn = (HttpConnection) connDesc.getConnection();
 			httpConn.setRequestMethod(HttpConnection.POST);
-			String authString = "Basic: " + encodeUserPassword();
+			String authString = "Basic " + encodeUserPassword();
 			// authString = authString.replaceAll("\n", "");
 			try {
 				System.out.println("AuthString: " + authString);
@@ -61,15 +64,23 @@ public class Client {
 			bos.write(("\r\n--" + "----------V2ymHFg03ehbqgZCaKO6jy" + "--\r\n")
 					.getBytes());
 
+			bos.close();
 			os.write(bos.toByteArray());
-			// os.close();
+			os.close();
 		} catch (Exception e) {
 			System.out.println("Exception 1: " + e.getMessage());
 		}
 		try {
 			responseCode = httpConn.getResponseCode();
 		} catch (IOException e1) {
-			System.out.println("Exception 2: " + e1.getMessage());
+			final String message = e1.getMessage();
+			System.out.println("Exception 2: " + message);
+			UiApplication.getUiApplication().invokeLater(new Runnable() {
+
+				public void run() {
+					Dialog.alert("Http TimeOut! Exception Message: " + message);
+				}
+			});
 		}
 		if (responseCode == 200) {
 			InputStream inputStream = null;
@@ -80,38 +91,38 @@ public class Client {
 			}
 			try {
 				Task task = new Task(inputStream);
-				inputStream.close();
-				httpConn.close();
 				return task;
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getMessage());
 			}
 		} else if (responseCode == 401) {
-			HTTPRequest
-					.errorDialog("HTTP 401 Unauthorized. Please check your application id and password");
+			OCR.errorDialog("HTTP 401 Unauthorized. Please check your application id and password");
 		} else if (responseCode == 407) {
-			HTTPRequest.errorDialog("HTTP 407. Proxy authentication error");
+			OCR.errorDialog("HTTP 407. Proxy authentication error");
 		} else {
-			HTTPRequest.errorDialog("Exiting from getResponse");
+			System.out.println("Error: Exiting from getResponse");
 		}
 		return null;
 	}
 
 	public Task getTaskStatus(String taskId) {
 		String url = new String(serverUrl + "/getTaskStatus?taskId=" + taskId);
-
+		System.out.println("URL for getTaskStatus: " + url);
 		HttpConnection httpConn = null;
 		try {
 			httpConn = (HttpConnection) Connector.open(url);
+			httpConn.setRequestMethod(HttpConnection.GET);
+			String authString = "Basic " + encodeUserPassword();
+			httpConn.setRequestProperty("Authorization", authString);
 		} catch (IOException e) {
-			System.out.println("Exception: " + e.getMessage());
+			OCR.errorDialog("getTaskStatus Exception: " + e.getMessage());
 		}
 
 		int responseCode = 0;
 		try {
 			responseCode = httpConn.getResponseCode();
 		} catch (IOException e1) {
-			e1.printStackTrace();
+			System.out.println("Exception: " + e1.getMessage());
 		}
 		if (responseCode == 200) {
 			InputStream inputStream = null;
@@ -122,8 +133,6 @@ public class Client {
 			}
 			try {
 				Task task = new Task(inputStream);
-				inputStream.close();
-				httpConn.close();
 				return task;
 			} catch (Exception e) {
 				System.out.println("Exception: " + e.getMessage());
@@ -139,33 +148,65 @@ public class Client {
 		return null;
 	}
 
-	public void downloadResult(Task task, String outputFile) {
-		if (task.Status != Task.TaskStatus[4]) {
-			throw new IllegalArgumentException("Invalid task status");
-		}
-
-		if (task.DownloadUrl == null) {
-			throw new IllegalArgumentException(
-					"Cannot download result without url");
-		}
-
-		String url = new String(task.DownloadUrl);
-		HttpConnection connection = null;
-		try {
-			System.out.println("URL: " + url);
-			connection = (HttpConnection) Connector.open(url);
-		} catch (IOException e) {
-			System.out.println("Exception: " + e.getMessage());
-		}
-		// do not use authenticated connection
-
-		try {
-			byte[] data = IOUtilities.streamToBytes(connection
-					.openInputStream());
-			HTTPRequest.errorDialog(String.valueOf(data));
-		} catch (IOException e) {
-			System.out.println("Exception: " + e.getMessage());
-		}
+	public void downloadResult(Task task, String outputFile) {/*
+															 * if (task.Status
+															 * !=
+															 * Task.TaskStatus
+															 * [4]) { throw new
+															 * IllegalArgumentException
+															 * (
+															 * "Invalid task status"
+															 * ); }
+															 * 
+															 * if
+															 * (task.DownloadUrl
+															 * == null) { throw
+															 * new
+															 * IllegalArgumentException
+															 * (
+															 * "Cannot download result without url"
+															 * ); }
+															 * 
+															 * String url = new
+															 * String
+															 * (task.DownloadUrl
+															 * ); HttpConnection
+															 * connection =
+															 * null; try {
+															 * System
+															 * .out.println
+															 * ("URL: " + url);
+															 * connection =
+															 * (HttpConnection)
+															 * Connector
+															 * .open(url); }
+															 * catch
+															 * (IOException e) {
+															 * System
+															 * .out.println
+															 * ("Exception: " +
+															 * e.getMessage());
+															 * } // do not use
+															 * authenticated
+															 * connection
+															 * 
+															 * try { byte[] data
+															 * = IOUtilities.
+															 * streamToBytes
+															 * (connection
+															 * .openInputStream
+															 * ());
+															 * OCR.errorDialog
+															 * (String
+															 * .valueOf(data));
+															 * } catch
+															 * (IOException e) {
+															 * System
+															 * .out.println
+															 * ("Exception: " +
+															 * e.getMessage());
+															 * }
+															 */
 	}
 
 	public void downloadResult(Task task) {
@@ -186,68 +227,59 @@ public class Client {
 			System.out.println("Exception: " + e.getMessage());
 		}
 
-		byte[] data = null;
 		try {
-			data = IOUtilities.streamToBytes(connection.openInputStream());
+			final byte[] data = IOUtilities.streamToBytes(connection
+					.openInputStream());
+			if (data != null) {
+
+				UiApplication.getUiApplication().invokeAndWait(new Runnable() {
+					public void run() {
+						try {
+							Dialog.inform((new String(data, "UTF-8")));
+						} catch (UnsupportedEncodingException e) {
+							Dialog.inform("Data received but was not encoded properly.");
+							System.out.println("Exception: " + e.getMessage());
+						}
+					}
+				});
+			}
 		} catch (IOException e) {
 			System.out.println("Exception: " + e.getMessage());
 		}
-		if (data != null)
-			try {
-				Dialog.inform(new String(data, "UTF-8"));
-			} catch (UnsupportedEncodingException e) {
-				HTTPRequest
-						.errorDialog("Data received but was not encoded properly.");
-				e.printStackTrace();
-			}
 	}
 
 	private String encodeUserPassword() {
 		String toEncode = ClientSettings.APPLICATION_ID + ":"
 				+ ClientSettings.PASSWORD;
 		System.out.println("To Encode: " + toEncode);
-		return Base64.encode(toEncode);
+		return Base64.encode(toEncode.getBytes());
 	}
 
-	// private Task[] getTaskListResponse(HttpURLConnection connection)
-	// throws Exception {
-	// int responseCode = connection.getResponseCode();
-	// if (responseCode == 200) {
-	// InputStream inputStream = connection.getInputStream();
-	// BufferedReader reader = new BufferedReader(new InputStreamReader(
-	// inputStream));
-	//
-	// return Task.LoadTasks(reader);
-	// } else if (responseCode == 401) {
-	// throw new Exception(
-	// "HTTP 401 Unauthorized. Please check your application id and password");
-	// } else if (responseCode == 407) {
-	// throw new Exception("HTTP 407. Proxy authentication error");
-	// } else {
-	// String message = "";
-	// try {
-	// InputStream errorStream = connection.getErrorStream();
-	//
-	// BufferedReader reader = new BufferedReader(
-	// new InputStreamReader(errorStream));
-	//
-	// // Parse xml error response
-	// InputSource source = new InputSource();
-	// source.setCharacterStream(reader);
-	// DocumentBuilder builder = DocumentBuilderFactory.newInstance()
-	// .newDocumentBuilder();
-	// Document doc = builder.parse(source);
-	//
-	// NodeList error = doc.getElementsByTagName("error");
-	// Element err = (Element) error.item(0);
-	//
-	// message = err.getTextContent();
-	// } catch (Exception e) {
-	// throw new Exception("Error getting server response");
-	// }
-	//
-	// throw new Exception("Error: " + message);
-	// }
-	// }
+	private boolean saveFile(String fileName, String fileContent) {
+		DataOutputStream os = null;
+		FileConnection fconn = null;
+		try {
+			fconn = (FileConnection) Connector.open(fileName,
+					Connector.READ_WRITE);
+			if (!fconn.exists())
+				fconn.create();
+			os = fconn.openDataOutputStream();
+			String myString = fileContent;
+			os.write(myString.getBytes());
+			os.close();
+			fconn.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			Dialog.alert(e.toString());
+			return false;
+		}
+		return true;
+	}
+
+	private String getFileName() {
+
+		return "file:///SDCard/BlackBerry/documents/text.dat";
+
+	}
 
 }

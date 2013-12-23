@@ -1,13 +1,13 @@
 Manifest-Version: 1.0
 RIM-COD-Module-Name: HTTPRequest
 RIM-COD-Module-Dependencies: net_rim_cldc,net_rim_amms,net_rim_networkapi,net_rim_ui_extension,net_rim_xml_org,net_rim_xml
-MIDlet-Jar-Size: 53644
+MIDlet-Jar-Size: 57701
 MIDlet-1: BB OCR,img/httpdemo_jde.png,
-RIM-COD-Creation-Time: 1387742175
+RIM-COD-Creation-Time: 1387828223
 MIDlet-Jar-URL: BBOCR.jar
 RIM-COD-URL: HTTPRequest.cod
-RIM-COD-SHA1: 86 35 6c 70 9f a4 c2 88 37 48 82 3e f6 72 88 82 0e 80 51 56
-RIM-COD-Size: 22936
+RIM-COD-SHA1: eb 9c d4 2f 31 65 e3 bf ef 13 46 ef 6b ec 14 73 d9 39 ff 85
+RIM-COD-Size: 25084
 MicroEdition-Configuration: CLDC-1.1
 MIDlet-Version: 1.0
 MIDlet-Name: BBOCR

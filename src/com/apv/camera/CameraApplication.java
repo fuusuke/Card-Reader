@@ -1,3 +1,17 @@
+/*
+ * CameraDemo.java
+ *
+ * Copyright © 1998-2012 Research In Motion Ltd.
+ * 
+ * Note: For the sake of simplicity, this sample application may not leverage
+ * resource bundles and resource strings.  However, it is STRONGLY recommended
+ * that application developers make use of the localization features available
+ * within the BlackBerry development platform to ensure a seamless application
+ * experience across a variety of languages and geographies.  For more information
+ * on localizing your application, please refer to the BlackBerry Java Development
+ * Environment Development Guide associated with this release.
+ */
+
 package com.apv.camera;
 
 import java.io.IOException;
@@ -33,7 +47,7 @@ import net.rim.device.api.ui.menu.SubMenu;
 import net.rim.device.api.util.StringProvider;
 import net.rim.device.api.util.StringUtilities;
 
-import com.apv.http.HTTPRequest;
+import com.apv.http.OCR;
 
 /**
  * A sample application used to demonstrate the VideoControl.getSnapshot()
@@ -56,7 +70,7 @@ public final class CameraApplication extends UiApplication {
 	}
 
 	/**
-	 * Creates a new CameraApplication object
+	 * Creates a new CameraDemo object
 	 */
 	public CameraApplication() {
 		UiApplication.getUiApplication().invokeLater(new Runnable() {
@@ -115,6 +129,8 @@ final class CameraScreen extends MainScreen {
 		if (_videoField != null) {
 			// Add the video field to the screen
 			add(_videoField);
+
+			// Initialize the camera features menus
 
 			_turnOffAutoFocusMenuItem = new MenuItem(new StringProvider(
 					"Turn Off Auto-Focus"), 0x230020, 0);
@@ -269,6 +285,7 @@ final class CameraScreen extends MainScreen {
 	 * Builds the menu items for the various focus modes supported on the
 	 * device.
 	 */
+	// private void buildFocusModeMenuItems() {}
 
 	/**
 	 * Builds the menu items for the various scene modes supported on the device
@@ -295,13 +312,13 @@ final class CameraScreen extends MainScreen {
 
 			// Retrieve the raw image from the VideoControl and
 			// create a screen to display the image to the user.
-			byte[] snapshot = _videoControl.getSnapshot(encoding);
+			final byte[] snapshot = _videoControl.getSnapshot(encoding);
 
 			// Save Image to a file
 
 			SaveStatus saveStatus = saveImageToFile(snapshot);
 
-			// createImageScreen(snapshot);
+			createImageScreen(snapshot);
 		} catch (Exception e) {
 			CameraApplication.errorDialog("ERROR " + e.getClass() + ":  "
 					+ e.getMessage());
@@ -310,7 +327,8 @@ final class CameraScreen extends MainScreen {
 
 	private SaveStatus saveImageToFile(byte[] snapshot) {
 		try {
-			String filePath = PHOTO_DIR + imageName + EXTENSION;
+			String filePath = PHOTO_DIR + imageName + "_"
+					+ System.currentTimeMillis() + EXTENSION;
 			FileConnection fconn = (FileConnection) Connector.open(filePath);
 			if (!fconn.exists())
 				fconn.create();
@@ -320,16 +338,12 @@ final class CameraScreen extends MainScreen {
 			OutputStream out = fconn.openOutputStream();
 			PNGEncodedImage encodedImage = PNGEncodedImage.encode(bitmapImage);
 			byte[] imageBytes = encodedImage.getData();
-			out.write(snapshot);
+			out.write(imageBytes);
 			out.close();
 			fconn.close();
 			System.out.println("Image Created");
-			Dialog.inform("Image Saved");
-
-			// Call the recognition API
-			System.out.println("Before HttpRequest");
-			new HTTPRequest(imageBytes);
-			System.out.println("After HttpRequest");
+			OCR.errorDialog("Image Saved");
+			new OCR(imageBytes);
 			return new SaveStatus(true, filePath, "Image is Saved.");
 		} catch (IOException e) {
 			System.out.println("Exception: " + e.getMessage());
